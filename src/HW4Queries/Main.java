@@ -1,4 +1,4 @@
-package NetworkAnalysis;
+package HW4Queries;
 
 import Controllers.*;
 import org.neo4j.graphdb.GraphDatabaseService;

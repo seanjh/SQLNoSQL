@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class MySQLProperties {
+    private static ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     public static final String mySQLConfigFileName = "mysql.properties";
 
     public static MysqlDataSource getRelationalDataSource() throws IOException {
@@ -30,8 +31,7 @@ public class MySQLProperties {
     }
 
     public static Properties loadMySQLProperties() throws IOException {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream is = classloader.getResourceAsStream(mySQLConfigFileName);
+        InputStream is = classLoader.getResourceAsStream(mySQLConfigFileName);
         Properties properties = new Properties();
         properties.load(is);
 
