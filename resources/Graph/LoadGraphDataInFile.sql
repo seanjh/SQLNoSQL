@@ -1,0 +1,7 @@
+LOAD DATA LOCAL INFILE ?
+    INTO TABLE directed
+    FIELDS
+        TERMINATED BY '\t'
+    LINES
+        TERMINATED BY '\n'
+    IGNORE 4 LINES;

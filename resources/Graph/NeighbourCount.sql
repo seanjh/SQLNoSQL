@@ -1,0 +1,1 @@
+SELECT FromNodeId, COUNT(ToNodeId) AS NeighbourCount FROM directed WHERE FromNodeId = ? GROUP BY FromNodeId

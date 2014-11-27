@@ -1,0 +1,14 @@
+db.Trajectories.aggregate([
+  {$match: {$and: [
+      {startTime: {$gte: new ISODate("2009-01-01")}},
+      {startTime: {$lt: new ISODate("2009-01-02")}}
+    ]}},
+  {$project: {
+      _id: 0,
+      measureCount: { $size: "$measures" }}
+    },
+  {$group: {
+    _id: null,
+    totalCount: {$sum: "$measureCount"}
+  }}
+]);

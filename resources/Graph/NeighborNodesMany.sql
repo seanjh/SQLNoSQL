@@ -1,0 +1,1 @@
+SELECT NodeId, PairedNodeId FROM NodePairs WHERE NodeId IN

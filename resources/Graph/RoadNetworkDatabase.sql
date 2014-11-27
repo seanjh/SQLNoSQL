@@ -1,0 +1,18 @@
+DROP DATABASE IF EXISTS GraphNetworks;
+CREATE DATABASE GraphNetworks;
+USE GraphNetworks;
+
+CREATE TABLE IF NOT EXISTS directed (
+  FromNodeId INT UNSIGNED,
+  ToNodeId INT UNSIGNED,
+  PRIMARY KEY (FromNodeId, ToNodeId)
+);
+
+CREATE TABLE IF NOT EXISTS nodes (
+    NodeId INT UNSIGNED PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS NodePairs (
+    NodeId INT UNSIGNED,
+    PairedNodeId INT UNSIGNED
+);

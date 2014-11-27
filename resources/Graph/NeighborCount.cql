@@ -1,0 +1,1 @@
+MATCH (startNode:Endpoint)-[:CONNECTED*..1]-(connectedNode:Endpoint) WHERE startNode.Id = {value} RETURN startNode, count(DISTINCT connectedNode)

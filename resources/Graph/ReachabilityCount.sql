@@ -1,0 +1,1 @@
+SELECT FromNodeId, ToNodeId FROM directed WHERE FromNodeId IN

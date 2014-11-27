@@ -13,3 +13,7 @@ hs_err_pid*
 
 # IntelliJ
 .idea/
+out/
+
+# Neo4j
+neo4j-db/

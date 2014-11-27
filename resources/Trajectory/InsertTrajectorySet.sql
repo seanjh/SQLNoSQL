@@ -1,0 +1,1 @@
+INSERT INTO Sets (setId, startTime, userId) VALUES (?, ?, ?);
