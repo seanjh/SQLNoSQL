@@ -1,16 +1,10 @@
 package CreateDB;
 
-import Controllers.GraphController;
-import Controllers.MongoTrajectoryController;
-import Controllers.RelationalGraphController;
-import Controllers.RelationalTrajectoryController;
+import Controllers.*;
 import com.mongodb.MongoException;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Main {
     private static final String graphSourceFileName = "/Users/sean/Sync/cornell/databases/data/roadNet-CA.txt";
@@ -26,7 +20,7 @@ public class Main {
             GraphController gc = new GraphController();
             RelationalGraphController rgc = new RelationalGraphController();
             gc.loadGraphDB(graphSourceFileName);
-            rgc.loadGraphDatabase(graphSourceFileName);
+            rgc.createGraphDatabase(graphSourceFileName);
             gc.finish();
             rgc.finish();
         } catch (IOException e) { e.printStackTrace(); System.exit(1); }
@@ -36,22 +30,29 @@ public class Main {
         try {
             createRelationalTrajectories();
             createMongoTrajectories();
+            createRedisTrajectories();
         } catch (IOException e) { e.printStackTrace(); System.exit(1); }
     }
 
     private static void createRelationalTrajectories() throws IOException {
         RelationalTrajectoryController rtc = new RelationalTrajectoryController();
-        rtc.loadTrajectoryDatabase(trajectorySourceDir);
+        rtc.createTrajectoryDatabase(trajectorySourceDir);
         rtc.finish();
     }
 
     private static void createMongoTrajectories() throws IOException {
         try {
             MongoTrajectoryController mtc = new MongoTrajectoryController();
-            mtc.loadGraphDatabase(trajectorySourceDir);
+            mtc.createDatabase(trajectorySourceDir);
+            mtc.finish();
         }
         catch (UnknownHostException e) { e.printStackTrace(); }
         catch (MongoException e) { e.printStackTrace(); }
+    }
 
+    private static void createRedisTrajectories() throws IOException {
+        RedisTrajectoryController dtc = new RedisTrajectoryController();
+        dtc.createDatabase(trajectorySourceDir);
+        dtc.finish();
     }
 }

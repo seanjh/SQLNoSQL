@@ -19,7 +19,7 @@ public class RelationalGraphController extends RelationalController {
         super();
     }
 
-    public void loadGraphDatabase(String sourcePath) {
+    public void createGraphDatabase(String sourcePath) {
         try {
             BootstrapMySQL.bootstrapGraphDB(getRelationalConnection(), sourcePath);
         } catch (SQLException e) { e.printStackTrace(); }

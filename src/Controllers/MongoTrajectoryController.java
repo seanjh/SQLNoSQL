@@ -25,7 +25,7 @@ public class MongoTrajectoryController {
     public DB getDB() { return this.db; }
     public DBCollection getCollection() { return this.collection; }
 
-    public void loadGraphDatabase(String sourcePath) throws IOException, MongoException {
+    public void createDatabase(String sourcePath) throws IOException, MongoException {
         BootStrapMongoDB.bootstrap(this.mongo, sourcePath);
     }
 

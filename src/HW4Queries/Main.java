@@ -1,7 +1,9 @@
 package HW4Queries;
 
 import Controllers.*;
+import com.mongodb.MongoException;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.NotFoundException;
 
 import java.io.IOException;
 import java.sql.*;
@@ -14,6 +16,7 @@ import java.util.Date;
 
 public class Main {
     static final int maxNodeId = 1971278;
+    static final int queryCount = 10;
     static final String graphDatabaseName = "GraphNetworks";
     static final String trajectoriesDatabaseName = "GeoLifeTrajectories";
     static final String minTrajDateStr = "2000-01-01 00:00:00";
@@ -31,26 +34,29 @@ public class Main {
             RelationalTrajectoryController rtc = new RelationalTrajectoryController();
             rtc.setRelationalDatabase(trajectoriesDatabaseName);
             MongoTrajectoryController mtc = new MongoTrajectoryController();
-            executeTrajectoryQueries(rtc, mtc);
+            RedisTrajectoryController dtc = new RedisTrajectoryController();
+            executeTrajectoryQueries(rtc, mtc, dtc);
             rtc.finish();
             mtc.finish();
+            dtc.finish();
         }
-        catch (SQLException e) { e.printStackTrace(); }
         catch (IOException e) { e.printStackTrace(); }
+        catch (SQLException e) { e.printStackTrace(); }
+        catch (NotFoundException e) { e.printStackTrace(); }
+        catch (MongoException e) { e.printStackTrace(); }
     }
 
     private static void executeGraphQueries(Connection conn, GraphDatabaseService graphDb)
             throws SQLException, IOException {
-        final int queryNum = 2;
-        int[] queryValues = new int[queryNum];
-        for (int i=0; i<queryNum; i++) {
+        int[] queryValues = new int[queryCount];
+        for (int i=0; i<queryCount; i++) {
             queryValues[i] = randInt(0, maxNodeId);
         }
 
-        List<Long> sqlNC = new ArrayList<>(queryNum);
-        List<Long> graphNC = new ArrayList<>(queryNum);
-        List<Long> sqlR = new ArrayList<>(queryNum);
-        List<Long> graphR = new ArrayList<>(queryNum);
+        List<Long> sqlNC = new ArrayList<>(queryCount);
+        List<Long> graphNC = new ArrayList<>(queryCount);
+        List<Long> sqlR = new ArrayList<>(queryCount);
+        List<Long> graphR = new ArrayList<>(queryCount);
         long start;
         long elapsed;
         for (int value : queryValues) {
@@ -73,8 +79,6 @@ public class Main {
             ResultController.printResult(GraphController.reachabilityTraversal(graphDb, value));
             elapsed = ResultController.printEnd(start);
             graphR.add(elapsed);
-
-            //getTrajectorySetCount()
         }
 
         /*
@@ -83,14 +87,15 @@ public class Main {
          */
         ResultController.printElapsedReview(sqlNC, "MySQL Node Neighbor Count");
         ResultController.printElapsedReview(graphNC, "Neo4j Node Neighbor Count");
+
         ResultController.printElapsedReview(sqlR, "MySQL Reachability Count");
         ResultController.printElapsedReview(graphR, "Neo4j Reachability Count");
     }
 
-    private static void executeTrajectoryQueries(RelationalTrajectoryController rtc, MongoTrajectoryController mtc)
+    private static void executeTrajectoryQueries(RelationalTrajectoryController rtc, MongoTrajectoryController mtc,
+                                                 RedisTrajectoryController dtc)
             throws SQLException {
-        final int queryNum = 2;
-        final String fileNameSample = "20081023175854.plt";
+        final String fileNameSample = "20090401202331.plt";
         final int userId = 3;
 
         long start;
@@ -103,10 +108,15 @@ public class Main {
         ResultController.printResult(MongoTrajectoryController.getTrajectorySetCount(mtc.getCollection(), fileNameSample, userId));
         ResultController.printEnd(start);
 
-        List<Long> sqlMD = new ArrayList<>(queryNum);
-        List<Long> mongoMD = new ArrayList<>(queryNum);
+        start = ResultController.printStart("Redis Trajectory Set Count", "Trajectory", fileNameSample);
+        ResultController.printResult(RedisTrajectoryController.getTrajectorySetCount(dtc.getJedis(), fileNameSample));
+        ResultController.printEnd(start);
+
+        List<Long> sqlMD = new ArrayList<>(queryCount);
+        List<Long> mongoMD = new ArrayList<>(queryCount);
+        List<Long> redisMD = new ArrayList<>(queryCount);
         long elapsed;
-        for (int i=0; i<queryNum; i++) {
+        for (int i=0; i<queryCount; i++) {
             LocalDate tmpDate = randomDateBetweenDates(minTrajDateStr, maxTrajDateStr);
 
             start = ResultController.printStart("MySQL Trajectory Measures on Date", "Date", tmpDate.toString());
@@ -118,10 +128,16 @@ public class Main {
             ResultController.printResult(MongoTrajectoryController.getMeasuresOnDateCount(mtc.getCollection(), utilDateFromLocalDate(tmpDate)));
             elapsed = ResultController.printEnd(start);
             mongoMD.add(elapsed);
+
+            start = ResultController.printStart("Redis Trajectory Measures on Date", "Date", tmpDate.toString());
+            ResultController.printResult(RedisTrajectoryController.getMeasuresOnDateCount(dtc.getJedis(), tmpDate));
+            elapsed = ResultController.printEnd(start);
+            redisMD.add(elapsed);
         }
 
         ResultController.printElapsedReview(sqlMD, "MySQL Trajectory Measures on Date");
         ResultController.printElapsedReview(mongoMD, "MongoDB Trajectory Measures on Date");
+        ResultController.printElapsedReview(redisMD, "Redis Trajectory Measures on Date");
     }
 
     // via Greg Case @ http://stackoverflow.com/a/363692

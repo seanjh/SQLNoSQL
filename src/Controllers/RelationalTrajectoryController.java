@@ -18,7 +18,7 @@ public class RelationalTrajectoryController extends RelationalController {
 
     public RelationalTrajectoryController() { super(); }
 
-    public void loadTrajectoryDatabase(String sourcePath) throws IOException {
+    public void createTrajectoryDatabase(String sourcePath) throws IOException {
         try {
             BootstrapMySQL.bootstrapTrajectories(getRelationalConnection(), sourcePath);
         }

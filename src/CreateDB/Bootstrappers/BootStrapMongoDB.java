@@ -17,8 +17,10 @@ public class BootStrapMongoDB {
             "(?<longitude>[0-9\\.]+){1}\\k<sep>{1}(?<zeroField>[0]){1}\\k<sep>{1}(?<altitude>[0-9]+\\.*[0-9]*){1}" +
             "\\k<sep>{1}(?<dateOffset>[0-9\\\\.]+){1}\\k<sep>{1}(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})" +
             "\\k<sep>{1}(?<hour>[0-9]{2}):(?<minute>[0-9]{2}):(?<second>[0-9]{2})";
+    private static final Pattern pattern = Pattern.compile(regexPattern);
 
     public static void bootstrap(MongoClient mongo, String sourceDirStr) throws IOException, MongoException {
+        System.out.printf("Preparing to load trajectory data to MongoDB. ");
         long start = System.nanoTime();
         DBCollection coll = createTrajectoryDatabase(mongo);
         BulkWriteOperation builder;
@@ -68,7 +70,6 @@ public class BootStrapMongoDB {
     private static void processTrajectoryMeasures(File plotFile, ArrayList<BasicDBObject> measures) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader(plotFile));
 
-        Pattern pattern = Pattern.compile(regexPattern);
         Matcher matcher;
         String line = "";
         while ((line = in.readLine()) != null) {

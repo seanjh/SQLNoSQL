@@ -76,7 +76,6 @@ public class GraphController {
                     .evaluator(Evaluators.excludeStartPosition());
                     //.evaluator(Evaluators.toDepth(500));
             for (Path reachableNode : td.traverse(node)) {
-                //System.out.println(friendPath.endNode());
                 neighbors++;
             }
             tx.success();

@@ -24,6 +24,8 @@ public class BootstrapMySQL {
     //private static final String insertPairsFileName = "InsertNodePairs.sql";
 
     public static void bootstrapTrajectories(Connection conn, String source) throws SQLException, IOException {
+        System.out.printf("Preparing to load trajectory data to MySQL database. ");
+
         // Create the trajectory database and tables
         long start = System.nanoTime();
         createTrajectoryDB(conn);
@@ -36,7 +38,9 @@ public class BootstrapMySQL {
         int userId;
         for (File userDir : sourceDir.listFiles()) {
             // Insert the user into the database, and get that user's Id from the database
-            insertTrajectoryUser(conn, Integer.parseInt(userDir.getName()));
+            try {
+                insertTrajectoryUser(conn, Integer.parseInt(userDir.getName()));
+            } catch (NumberFormatException e) { continue; }
 
             // Each numbered user directory should include a /Trajectory directory
             File plotsDir = Paths.get(userDir.toString(), "Trajectory").toFile();
@@ -140,7 +144,7 @@ public class BootstrapMySQL {
     }
 
     public static void bootstrapGraphDB(Connection conn, String sourceFileName) throws SQLException {
-        System.out.printf("Preparing to load graph data to MySQL database.\n");
+        System.out.printf("Preparing to load graph data to MySQL database. ");
         long start = System.nanoTime();
         createGraphDB(conn);
         loadGraphData(conn, sourceFileName);
@@ -154,11 +158,13 @@ public class BootstrapMySQL {
 
     private static void loadGraphData(Connection conn, String sourceFileName) throws SQLException {
         long start = System.nanoTime();
+        System.out.printf("\tPreparing to execute load data statement. ");
         bulkInsertGraph(conn, sourceFileName);
         long elapsedTime = System.nanoTime() - start;
         System.out.printf("Completed in %.3f seconds.\n", (float) elapsedTime / Math.pow(10,9));
 
         start = System.nanoTime();
+        System.out.printf("\tPreparing to populate unique nodes table. ");
         insertUniqueGraphNodes(conn);
         elapsedTime = System.nanoTime() - start;
         System.out.printf("Completed in %.3f seconds.\n", (float) elapsedTime / Math.pow(10,9));
@@ -173,7 +179,6 @@ public class BootstrapMySQL {
 
         try (PreparedStatement stmt = conn.prepareStatement(loadStatement)) {
             stmt.setString(1, sourceFileName);
-            System.out.printf("\tPreparing to execute load data statement. ");
             stmt.execute();
             //System.out.printf("Completed.\n");
         } catch (Exception e) { conn.rollback(); }
@@ -188,7 +193,6 @@ public class BootstrapMySQL {
         catch (IOException e) { e.printStackTrace(); System.exit(1); }
 
         try ( PreparedStatement stmt = conn.prepareStatement(insertStatement) ) {
-            System.out.printf("\tPreparing to populate unique nodes table. ");
             stmt.execute();
             conn.commit();
         }
@@ -202,8 +206,6 @@ public class BootstrapMySQL {
         catch (IOException e) { e.printStackTrace(); System.exit(1); }
 
         // Create the database and tables if it doesn't exist already
-        System.out.printf("\tPreparing to execute create statement. ");
-        long start = System.nanoTime();
         for (String sqlString : createStatement.split(";")) {
             if (sqlString.trim().isEmpty()) {
                 continue;
@@ -212,7 +214,5 @@ public class BootstrapMySQL {
             stmt.execute();
         }
         conn.commit();
-        long elapsedTime = System.nanoTime() - start;
-        System.out.printf("Completed in %.3f seconds.\n", (float) elapsedTime / Math.pow(10,9));
     }
 }
